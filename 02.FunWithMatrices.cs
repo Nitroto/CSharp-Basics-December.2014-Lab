@@ -7,167 +7,90 @@ class FunWithMatrices
     static void Main()
     {
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-        double startNum = double.Parse(Console.ReadLine());
+        double[,] matrix = new double[4, 4];
+        matrix[0, 0] = double.Parse(Console.ReadLine());
         double step = double.Parse(Console.ReadLine());
-        double[,] matrice = new double[4, 4];
-        double previousValue = 0;
-        for (int i = 0; i < matrice.GetLength(0); i++)
+        double previous = matrix[0, 0];
+        for (int i = 0; i < matrix.GetLength(0); i++)
         {
-            for (int j = 0; j < matrice.GetLength(1); j++)
+            for (int j = 0; j < matrix.GetLength(1); j++)
             {
-                if (i == 0 && j == 0)
+                if (i != 0 || j != 0)
                 {
-                    matrice[i, j] = startNum;
+                    matrix[i, j] = previous + step;
+                    previous = matrix[i, j];
                 }
-                else
-                {
-                    matrice[i, j] = previousValue + step;
-                }
-                previousValue = matrice[i, j];
             }
         }
-        string userInput = Console.ReadLine();
-        bool gameOver = userInput == "Game Over!";
-        while (!gameOver)
+        string[] command = Console.ReadLine().Split();
+        while (command[0] != "Game")
         {
-            string[] command = userInput.Split(' ');
             int row = int.Parse(command[0]);
             int col = int.Parse(command[1]);
-            string action = command[2];
             double actionNum = double.Parse(command[3]);
-            matrice[row, col] = DoAction(matrice[row, col], actionNum, action);
-            userInput = Console.ReadLine();
-            gameOver = userInput == "Game Over!";
-        }
-        int biggestRow = GetBiggestRow(matrice);
-        double sumOfBiggestRow = GetBiggestRowSum(matrice);
-        int bigestCol = GetBiggestCol(matrice);
-        double sumOfBiggestCol = GetBiggestColSum(matrice);
-        double leftDiagonal = GetSumOfLeftDiagonal(matrice);
-        double rightDiagonal = GetSumOfRightDiagonal(matrice);
-        if (sumOfBiggestRow >= sumOfBiggestCol && sumOfBiggestRow >= leftDiagonal && sumOfBiggestRow >= rightDiagonal)
-        {
-            Console.WriteLine("ROW[{0}] = {1:F2}", biggestRow, sumOfBiggestRow);
-        }
-        else if (sumOfBiggestCol > sumOfBiggestRow && sumOfBiggestCol >= leftDiagonal && sumOfBiggestCol >= rightDiagonal)
-        {
-            Console.WriteLine("COLUMN[{0}] = {1:F2}", bigestCol, sumOfBiggestCol);
-        }
-        else if (leftDiagonal > sumOfBiggestRow && leftDiagonal > sumOfBiggestCol && leftDiagonal >= rightDiagonal)
-        {
-            Console.WriteLine("LEFT-DIAGONAL = {0:F2}", leftDiagonal);
-        }
-        else if (rightDiagonal > sumOfBiggestRow && rightDiagonal > sumOfBiggestCol && rightDiagonal > leftDiagonal)
-        {
-            Console.WriteLine("RIGHT-DIAGONAL = {0:F2}", rightDiagonal);
-        }
-    }
-    static double DoAction(double num, double actionValue, string action)
-    {
-        double returnValue = 0;
-        switch (action)
-        {
-            case "multiply": returnValue = num * actionValue; break;
-            case "sum": returnValue = num + actionValue; break;
-            case "power": returnValue = Math.Pow(num, actionValue); break;
-        }
-        return returnValue;
-    }
-    static int GetBiggestRow(double[,] array)
-    {
-        double biggestRowSum = double.MinValue;
-        int row = 0;
-        for (int i = 0; i < array.GetLength(0); i++)
-        {
-            double rowSum = 0;
-            for (int j = 0; j < array.GetLength(1); j++)
+            switch (command[2])
             {
-                rowSum += array[i, j];
+                case "multiply": matrix[row,col] *= actionNum;break;
+                case "sum": matrix[row, col] += actionNum;break;
+                case "power": matrix[row, col] = Math.Pow(matrix[row, col], actionNum);break;
             }
-            if (rowSum > biggestRowSum)
+            command = Console.ReadLine().Split();
+        }
+        double maxRow = double.MinValue;
+        int rowIndex = 0;
+        double maxCol = double.MinValue;
+        int colIndex = 0;
+        double left = 0;
+        double right = 0;
+        for (int i = 0; i < matrix.GetLength(0); i++)
+        {
+            double currentMax = 0;
+            for (int j = 0; j < matrix.GetLength(1); j++)
             {
-                biggestRowSum = rowSum;
-                row = i;
+                currentMax += matrix[i, j];
+            }
+            if (currentMax > maxRow)
+            {
+                maxRow = currentMax;
+                rowIndex = i;
             }
         }
-        return row;
-    }
-    static double GetBiggestRowSum(double[,] array)
-    {
-        double biggestRowSum = double.MinValue;
-        int row = 0;
-        for (int i = 0; i < array.GetLength(0); i++)
+        for (int j = 0; j < matrix.GetLength(0); j++)
         {
-            double rowSum = 0;
-            for (int j = 0; j < array.GetLength(1); j++)
+            double currentMax = 0;
+            for (int i = 0; i < matrix.GetLength(1); i++)
             {
-                rowSum += array[i, j];
+                currentMax += matrix[i, j];
             }
-            if (rowSum > biggestRowSum)
+            if (currentMax > maxCol)
             {
-                biggestRowSum = rowSum;
-                row = i;
+                maxCol = currentMax;
+                colIndex = j;
             }
         }
-        return biggestRowSum;
-    }
-    static int GetBiggestCol(double[,] array)
-    {
-        double biggestColSum = double.MinValue;
-        int col = 0;
-        for (int j = 0; j < array.GetLength(1); j++)
+        for (int i=0; i< matrix.GetLength(0);i++)
         {
-            double colSum = 0;
-            for (int i = 0; i < array.GetLength(0); i++)
-            {
-                colSum += array[i, j];
-            }
-            if (colSum > biggestColSum)
-            {
-                biggestColSum = colSum;
-                col = j;
-            }
+            left += matrix[i, i];
         }
-        return col;
-    }
-    static double GetBiggestColSum(double[,] array)
-    {
-        double biggestColSum = double.MinValue;
-        int col = 0;
-        for (int j = 0; j < array.GetLength(1); j++)
+        for (int i = 0, j = matrix.GetLength(1) - 1; i < matrix.GetLength(0); j--,i++)
         {
-            double colSum = 0;
-            for (int i = 0; i < array.GetLength(0); i++)
-            {
-                colSum += array[i, j];
-            }
-            if (colSum > biggestColSum)
-            {
-                biggestColSum = colSum;
-                col = j;
-            }
+            right += matrix[i, j];
         }
-        return biggestColSum;
-    }
-    static double GetSumOfLeftDiagonal(double[,] array)
-    {
-        double sum = 0;
-        for (int i = 0; i < array.GetLength(0); i++)
+        if (maxRow >= maxCol && maxRow >= left && maxRow >= right)
         {
-            sum += array[i, i];
+            Console.WriteLine("ROW[{0}] = {1:F2}", rowIndex, maxRow);
         }
-        return sum;
-    }
-    static double GetSumOfRightDiagonal(double[,] array)
-    {
-
-        double sum = 0;
-        int j = array.GetLength(1);
-        for (int i = 0; i < array.GetLength(0); i++)
+        else if (maxCol> maxRow && maxCol >= left && maxCol >= right)
         {
-            j--;
-            sum += array[i, j];
+            Console.WriteLine("COLUMN[{0}] = {1:F2}", colIndex, maxCol);
         }
-        return sum;
+        else if (left>maxRow&& left>maxCol&& left >= right)
+        {
+            Console.WriteLine("LEFT-DIAGONAL = {0:F2}", left);
+        }
+        else if (right>maxRow&& right>maxCol&&right>left)
+        {
+            Console.WriteLine("RIGHT-DIAGONAL = {0:F2}", right);
+        }
     }
 }
